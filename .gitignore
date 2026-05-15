@@ -1,0 +1,5 @@
+Output/
+Visuals/
+Models/*.pkl
+__pycache__/
+*.pyc

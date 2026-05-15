@@ -1,5 +1,5 @@
 # =========================
-# CREDIT RISK / DELINQUENCY MODEL (PRODUCTION VERSION)
+# CREDIT RISK MODEL - PRODUCTION READY
 # =========================
 
 import os
@@ -12,19 +12,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
-
 from imblearn.over_sampling import SMOTE
 
 # =========================
-# 1. PATH SETUP (IMPORTANT FOR GITHUB)
+# 1. PATH SETUP
 # =========================
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = r"C:\Users\Admin\Desktop\AI_Credit_Risk_Project"
 
-DATA_PATH = os.path.join(BASE_DIR, "data", "Delinquency_prediction_dataset.xlsx")
-
-OUTPUT_DIR = os.path.join(BASE_DIR, "outputs", "reports")
-VISUAL_DIR = os.path.join(BASE_DIR, "visuals")
+DATA_PATH = os.path.join(BASE_DIR, "Data", "Delinquency_prediction_dataset.xlsx")
+OUTPUT_DIR = os.path.join(BASE_DIR, "Output", "Reports")
+VISUAL_DIR = os.path.join(BASE_DIR, "Visuals")
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(VISUAL_DIR, exist_ok=True)
@@ -40,7 +38,7 @@ print(df.shape)
 print(df.head())
 
 # =========================
-# 3. MISSING VALUE HANDLING
+# 3. MISSING VALUES HANDLING
 # =========================
 
 for col in df.columns:
@@ -52,19 +50,21 @@ for col in df.columns:
 print("\n===== MISSING VALUES FIXED =====")
 
 # =========================
-# 4. ENCODING
+# 4. ENCODING (SAFE VERSION)
 # =========================
 
-le = LabelEncoder()
+le_dict = {}
 
 for col in df.columns:
     if df[col].dtype == "object":
+        le = LabelEncoder()
         df[col] = le.fit_transform(df[col])
+        le_dict[col] = le
 
 print("\n===== ENCODING DONE =====")
 
 # =========================
-# 5. SPLIT FEATURES & TARGET
+# 5. SPLIT DATA
 # =========================
 
 target_col = "Delinquent_Account"
@@ -83,7 +83,7 @@ print("\nTrain shape:", X_train.shape)
 print("Test shape:", X_test.shape)
 
 # =========================
-# 6. SMOTE (HANDLE IMBALANCE)
+# 6. SMOTE
 # =========================
 
 smote = SMOTE(random_state=42)
@@ -125,35 +125,36 @@ print("Accuracy:", accuracy_score(y_test, y_pred))
 print("\nClassification Report:\n")
 print(classification_report(y_test, y_pred))
 
-# Confusion Matrix
+# =========================
+# 10. CONFUSION MATRIX
+# =========================
+
 cm = confusion_matrix(y_test, y_pred)
 
 plt.figure()
-sns.heatmap(cm, annot=True, fmt="d")
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
 plt.title("Confusion Matrix")
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
 
 cm_path = os.path.join(VISUAL_DIR, "confusion_matrix.png")
-plt.savefig(cm_path)
+plt.savefig(cm_path, bbox_inches="tight")
 plt.show()
 
 # =========================
-# 10. FEATURE IMPORTANCE
+# 11. FEATURE IMPORTANCE
 # =========================
 
-importances = model.feature_importances_
-
 plt.figure(figsize=(10,5))
-sns.barplot(x=importances, y=X.columns)
+sns.barplot(x=model.feature_importances_, y=X.columns)
 plt.title("Feature Importance")
 
 fi_path = os.path.join(VISUAL_DIR, "feature_importance.png")
-plt.savefig(fi_path)
+plt.savefig(fi_path, bbox_inches="tight")
 plt.show()
 
 # =========================
-# 11. SAVE OUTPUT (FIXED - NO DUPLICATES)
+# 12. SAVE OUTPUT (NO DUPLICATES)
 # =========================
 
 output = X_test.copy()
@@ -162,7 +163,6 @@ output["Predicted"] = y_pred
 
 output_file = os.path.join(OUTPUT_DIR, "delinquency_predictions_output.xlsx")
 
-# overwrite cleanly
 if os.path.exists(output_file):
     os.remove(output_file)
 

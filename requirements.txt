@@ -3,6 +3,5 @@ numpy
 matplotlib
 seaborn
 scikit-learn
-imbalanced-learn
+imblearn
 openpyxl
-joblib
